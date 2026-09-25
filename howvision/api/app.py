@@ -15,7 +15,7 @@ from howvision.learning.trainer import train,samples
 jobs={}
 class Ann(BaseModel):run_id:str;frame_id:int;label:str;original_label:str;reward:float=1;hand_strokes:list=[];wheel_strokes:list=[];flags:list=[]
 def create_app():
- c=load();data=Path(c['paths']['data']);out=Path(c['paths']['output']);data.mkdir(exist_ok=True);out.mkdir(exist_ok=True);store=Store(c['paths']['database']);app=FastAPI(title='Hands On Wheel Project',version='0.6.0')
+ c=load();data=Path(c['paths']['data']);out=Path(c['paths']['output']);data.mkdir(exist_ok=True);out.mkdir(exist_ok=True);store=Store(c['paths']['database']);app=FastAPI(title='Hands On Wheel Project',version='0.6.1')
  @app.get('/api/health')
  def health():return {'status':'READY' if Path(c['paths']['hand_model']).exists() else 'SETUP_REQUIRED','brush_radius_px':c['review']['brush_radius_px']}
  @app.post('/api/input/upload')
@@ -74,7 +74,9 @@ def create_app():
   Thread(target=work,daemon=True).start();return jobs[jid]
  @app.get('/api/runs/{rid}/frames/{fid}')
  def frame(rid:str,fid:int,view:str='overlay'):
-  folder='frames' if view=='raw' else 'overlays';return FileResponse(out/rid/folder/f'frame_{fid:06d}.jpg')
+  folder='frames' if view=='raw' else 'overlays';p=out/rid/folder/f'frame_{fid:06d}.jpg';fallback=out/rid/'overlays'/f'frame_{fid:06d}.jpg';p=p if p.exists() else fallback;
+  if not p.exists():raise HTTPException(404,'frame unavailable')
+  return FileResponse(p)
  @app.get('/api/runs/{rid}/csv')
  def csv(rid:str):return FileResponse(out/rid/'predictions.csv',filename=f'{rid}.csv')
  app.mount('/',StaticFiles(directory='frontend',html=True),name='ui');return app
