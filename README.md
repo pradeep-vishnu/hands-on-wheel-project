@@ -1,15 +1,20 @@
-# Hands On Wheel Project v0.3.0
+# Hands On Wheel Project v0.5.0
 
-Local RGB inference, visual review, polygon correction and reward-weighted classifier improvement.
+Full retained workflow: input preview, image/video inference, telemetry, overlays, CSV/JSONL/metrics/manifest, Review Studio, Magic Select correction, immutable annotations, reward-weighted PyTorch fine-tuning, timestamped checkpoints, model inspection, explicit default activation, and checkpoint-backed inference.
 
 ## Start
-`./scripts/setup.sh && ./scripts/run.sh`, then open `http://127.0.0.1:8000`.
-
-The setup script installs missing dependencies and downloads the official MediaPipe Hand Landmarker float16 model. Runtime is local after setup.
+```bash
+./scripts/setup.sh
+./scripts/run.sh
+```
+The browser opens automatically. Set `app.open_browser: false` for headless environments.
 
 ## Workflow
-1. RUN: upload an image/video and execute inference.
-2. REVIEW: choose a run and frame, override `BOTH_ON`, `LEFT_ON`, `RIGHT_ON`, `NONE_ON`, or `UNKNOWN`; optionally redraw hand/wheel polygons; assign reward; confirm.
-3. LEARN: train a small PyTorch policy classifier from reviewed perception/contact features. The loss combines supervised cross entropy, reward-weighted log policy, and entropy regularization.
+1. Upload. The latest upload is selected and previewed automatically; manual input selection is respected.
+2. Select the baseline or a timestamped checkpoint and run inference.
+3. Inspect FPS, CPU, memory, process RSS, live output, CSV, JSONL, metrics and manifest.
+4. Review frames, correct five-state labels, optionally replace hand/wheel evidence with Magic Select, and confirm feedback strength.
+5. Fine-tune the five-feature HOW decision policy using supervised plus reward-weighted policy loss and entropy regularization.
+6. Inspect the timestamped checkpoint and explicitly set it as default or select it for one run.
 
-This is human-feedback learning over the HOW classifier, not end-to-end reinforcement learning of MediaPipe. Polygon corrections are stored as ground truth for a future trainable segmentation layer. Original predictions are immutable. Models are versioned under `models/versions/how_####` and are not activated automatically. Do not claim improvement without evaluation on held-out reviewed data.
+Magic Select is color-region assistance, not semantic segmentation. MediaPipe remains the hand detector; fine-tuning trains the HOW decision classifier. Never claim improvement without held-out evaluation.

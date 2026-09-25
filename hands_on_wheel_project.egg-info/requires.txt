@@ -7,6 +7,7 @@ PyYAML<7,>=6
 python-multipart<1,>=0.0.9
 mediapipe<0.11,>=0.10.14
 torch<3,>=2.2
+psutil<8,>=5.9
 
 [test]
 pytest<10,>=8
