@@ -1,6 +1,7 @@
-app: {version: 0.5.0, host: 127.0.0.1, port: 8000, open_browser: true}
+app: {version: 0.6.0, host: 127.0.0.1, port: 8000, open_browser: true}
 paths: {data: data, output: out_dir, database: howvision.db, hand_model: models/hand_landmarker.task, registry: models/registry.json}
-perception: {hand_confidence: 0.5, wheel_confidence: 0.25}
-classifier: {contact_distance: 0.18, none_distance: 0.30}
-temporal: {confidence_threshold: 0.42, smoothing_window: 5, on_confirmation_frames: 2, off_confirmation_frames: 3, unknown_timeout: 4}
+perception: {hand_confidence: 0.5}
+classifier: {contact_distance: 0.18}
+temporal: {confidence_threshold: 0.42, smoothing_window: 5}
 training: {epochs: 20, learning_rate: 0.001, seed: 42, entropy_beta: 0.01}
+review: {brush_radius_px: 18}

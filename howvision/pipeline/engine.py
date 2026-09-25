@@ -1,43 +1,42 @@
 from pathlib import Path
 from collections import deque,Counter
 import cv2,json,csv,time,math,numpy as np,psutil
-from howvision.core.fs import allocate,atomic,sha,IMAGES,VIDEOS
+from howvision.core.fs import allocate,atomic,sha,VIDEOS
 LABELS=['LEFT_ON','RIGHT_ON','BOTH_ON','NONE_ON','UNKNOWN']
 class Engine:
- def __init__(self,cfg,checkpoint='baseline'):
-  self.c=cfg;self.checkpoint=checkpoint;import mediapipe as mp;from mediapipe.tasks import python;from mediapipe.tasks.python import vision
-  opts=vision.HandLandmarkerOptions(base_options=python.BaseOptions(model_asset_path=str(Path(cfg['paths']['hand_model']))),running_mode=vision.RunningMode.IMAGE,num_hands=2,min_hand_detection_confidence=cfg['perception']['hand_confidence']);self.mp=mp;self.det=vision.HandLandmarker.create_from_options(opts);self.model=None
+ def __init__(self,c,checkpoint='baseline'):
+  self.c=c;self.checkpoint=checkpoint;import mediapipe as mp;from mediapipe.tasks import python;from mediapipe.tasks.python import vision
+  opts=vision.HandLandmarkerOptions(base_options=python.BaseOptions(model_asset_path=str(Path(c['paths']['hand_model']))),running_mode=vision.RunningMode.IMAGE,num_hands=2,min_hand_detection_confidence=c['perception']['hand_confidence']);self.mp=mp;self.det=vision.HandLandmarker.create_from_options(opts);self.model=None
   if checkpoint!='baseline':
    import torch;from torch import nn
-   reg=json.loads(Path(cfg['paths']['registry']).read_text());meta=next(x for x in reg['checkpoints'] if x['id']==checkpoint);blob=torch.load(meta['path'],map_location='cpu');m=nn.Sequential(nn.Linear(5,24),nn.ReLU(),nn.Linear(24,5));m.load_state_dict(blob['state']);m.eval();self.model=m
+   reg=json.loads(Path(c['paths']['registry']).read_text());blob=torch.load(next(x for x in reg['checkpoints'] if x['id']==checkpoint)['path'],map_location='cpu');self.model=nn.Sequential(nn.Linear(5,24),nn.ReLU(),nn.Linear(24,5));self.model.load_state_dict(blob['state']);self.model.eval()
  def run(self,p,emit):
-  rid,rd=allocate(self.c['paths']['output'],'run');(rd/'overlays').mkdir();(rd/'logs').mkdir();ext=p.suffix.lower();seq=[]
+  rid,rd=allocate(self.c['paths']['output'],'run');(rd/'overlays').mkdir();(rd/'frames').mkdir();(rd/'logs').mkdir();seq=[];ext=p.suffix.lower()
   if ext in VIDEOS:
    cap=cv2.VideoCapture(str(p));fps=cap.get(cv2.CAP_PROP_FPS) or 25
    while True:
-    ok,im=cap.read();
+    ok,im=cap.read()
     if not ok:break
     seq.append((im,len(seq),float(cap.get(cv2.CAP_PROP_POS_MSEC))))
    cap.release()
   else:seq=[(cv2.imread(str(p)),0,0.)];fps=0
-  start=time.monotonic();proc=psutil.Process();rows=[];writer=None;window=deque(maxlen=self.c['temporal']['smoothing_window'])
-  jf=(rd/'predictions.jsonl').open('w')
+  start=time.monotonic();proc=psutil.Process();rows=[];writer=None;window=deque(maxlen=self.c['temporal']['smoothing_window']);jf=(rd/'predictions.jsonl').open('w')
   for im,i,ts in seq:
-   hands=self.hands(im);wheel=self.wheel(im);feat=self.features(hands,wheel);raw,conf=self.classify(feat,hands,wheel);window.append(raw if conf>=self.c['temporal']['confidence_threshold'] else 'UNKNOWN');smooth=Counter(window).most_common(1)[0][0];status='HOW_ON' if smooth in LABELS[:3] else 'HOW_OFF' if smooth=='NONE_ON' else 'UNKNOWN';rec={'run_id':rid,'source_file':p.name,'frame_id':i,'sequence_index':i,'timestamp_ms':ts,'timestamp_native':{'kind':'opencv_pos_msec' if ext in VIDEOS else 'image','value':ts},'hands':hands,'wheel':wheel,'features':feat,'raw_prediction':raw,'how_state':smooth,'how_status':status,'confidence':conf,'checkpoint':self.checkpoint};jf.write(json.dumps(rec)+'\n');rows.append(rec);ov=self.render(im,rec);cv2.imwrite(str(rd/'overlays'/f'frame_{i:06d}.jpg'),ov)
+   hands=self.hands(im);wheel=self.wheel(im);f=self.features(hands,wheel);raw,conf=self.classify(f,hands,wheel);window.append(raw if conf>=self.c['temporal']['confidence_threshold'] else 'UNKNOWN');smooth=Counter(window).most_common(1)[0][0];status='HOW_ON' if smooth in LABELS[:3] else 'HOW_OFF' if smooth=='NONE_ON' else 'UNKNOWN';rec={'run_id':rid,'source_file':p.name,'frame_id':i,'sequence_index':i,'timestamp_ms':ts,'timestamp_native':{'kind':'opencv_pos_msec' if ext in VIDEOS else 'image','value':ts},'hands':hands,'wheel':wheel,'features':f,'raw_prediction':raw,'how_state':smooth,'how_status':status,'confidence':conf,'checkpoint':self.checkpoint};jf.write(json.dumps(rec)+'\n');rows.append(rec);cv2.imwrite(str(rd/'frames'/f'frame_{i:06d}.jpg'),im);ov=self.render(im,rec);cv2.imwrite(str(rd/'overlays'/f'frame_{i:06d}.jpg'),ov)
    if ext in VIDEOS:
     if writer is None:writer=cv2.VideoWriter(str(rd/'output.mp4'),cv2.VideoWriter_fourcc(*'mp4v'),fps,(im.shape[1],im.shape[0]))
     writer.write(ov)
    else:cv2.imwrite(str(rd/f'output{ext}'),ov)
-   elapsed=max(time.monotonic()-start,.001);emit({'run_id':rid,'frame':i+1,'total':len(seq),'progress':(i+1)/len(seq),'fps':(i+1)/elapsed,'cpu':psutil.cpu_percent(),'memory':psutil.virtual_memory().percent,'process_mb':proc.memory_info().rss/1048576,'label':status,'confidence':conf,'preview':f'/api/runs/{rid}/frames/{i}'})
+   elapsed=max(time.monotonic()-start,.001);emit({'run_id':rid,'frame':i+1,'total':len(seq),'progress':(i+1)/len(seq),'fps':(i+1)/elapsed,'cpu':psutil.cpu_percent(),'memory':psutil.virtual_memory().percent,'process_mb':proc.memory_info().rss/1048576,'label':status,'confidence':conf,'preview':f'/api/runs/{rid}/frames/{i}?view=overlay'})
   jf.close();
   if writer:writer.release()
   cols=['run_id','source_file','frame_id','sequence_index','timestamp_ms','raw_prediction','how_state','how_status','confidence','checkpoint']
-  with (rd/'predictions.csv').open('w',newline='') as f:w=csv.DictWriter(f,fieldnames=cols);w.writeheader();w.writerows({k:r[k] for k in cols} for r in rows)
-  atomic(rd/'metrics.json',{'frames_processed':len(rows),'seconds':time.monotonic()-start,'average_fps':len(rows)/max(time.monotonic()-start,.001)});atomic(rd/'config.json',self.c);atomic(rd/'manifest.json',{'run_id':rid,'status':'COMPLETED','input':p.name,'input_hash':sha(p),'frames':len(rows),'checkpoint':self.checkpoint,'model_hash':sha(self.c['paths']['hand_model'])});return rid
+  with (rd/'predictions.csv').open('w',newline='') as q:w=csv.DictWriter(q,fieldnames=cols);w.writeheader();w.writerows({k:r[k] for k in cols} for r in rows)
+  elapsed=time.monotonic()-start;atomic(rd/'metrics.json',{'frames_processed':len(rows),'seconds':elapsed,'average_fps':len(rows)/max(elapsed,.001)});atomic(rd/'config.json',self.c);atomic(rd/'manifest.json',{'run_id':rid,'status':'COMPLETED','input':p.name,'input_hash':sha(p),'frames':len(rows),'checkpoint':self.checkpoint,'model_hash':sha(self.c['paths']['hand_model'])});return rid
  def hands(self,im):
-  rr=self.det.detect(self.mp.Image(image_format=self.mp.ImageFormat.SRGB,data=cv2.cvtColor(im,cv2.COLOR_BGR2RGB)));out=[]
-  for i,l in enumerate(rr.hand_landmarks):
-   c=rr.handedness[i][0];pts=[[float(x.x),float(x.y)] for x in l];poly=cv2.convexHull(np.array(pts,np.float32)).reshape(-1,2).tolist();out.append({'side':(c.category_name or 'UNKNOWN').upper(),'confidence':float(c.score),'landmarks':pts,'polygon':poly})
+  r=self.det.detect(self.mp.Image(image_format=self.mp.ImageFormat.SRGB,data=cv2.cvtColor(im,cv2.COLOR_BGR2RGB)));out=[]
+  for i,l in enumerate(r.hand_landmarks):
+   c=r.handedness[i][0];pts=[[float(x.x),float(x.y)] for x in l];poly=cv2.convexHull(np.array(pts,np.float32)).reshape(-1,2).tolist();out.append({'side':(c.category_name or 'UNKNOWN').upper(),'confidence':float(c.score),'landmarks':pts,'polygon':poly})
   return out
  def wheel(self,im):
   g=cv2.cvtColor(im,cv2.COLOR_BGR2GRAY);cs,_=cv2.findContours(cv2.Canny(g,60,160),cv2.RETR_LIST,cv2.CHAIN_APPROX_SIMPLE);h,w=g.shape;best=None
@@ -56,12 +55,12 @@ class Engine:
   return f
  def classify(self,f,h,w):
   if self.model:
-   import torch;v=[f[k] for k in ['left_distance','right_distance','wheel_confidence','left_confidence','right_confidence']];z=self.model(torch.tensor([v],dtype=torch.float32));p=torch.softmax(z,1)[0];return LABELS[int(p.argmax())],float(p.max())
+   import torch;v=[f[k] for k in ['left_distance','right_distance','wheel_confidence','left_confidence','right_confidence']];p=torch.softmax(self.model(torch.tensor([v],dtype=torch.float32)),1)[0];return LABELS[int(p.argmax())],float(p.max())
   if not w.get('visible'):return 'UNKNOWN',0
-  l=f['left_distance']<.18;r=f['right_distance']<.18;state='BOTH_ON' if l and r else 'LEFT_ON' if l else 'RIGHT_ON' if r else 'NONE_ON' if h else 'UNKNOWN';return state,min(1.,w['confidence']*max(f['left_confidence'],f['right_confidence'],.2))
+  l=f['left_distance']<self.c['classifier']['contact_distance'];r=f['right_distance']<self.c['classifier']['contact_distance'];return ('BOTH_ON' if l and r else 'LEFT_ON' if l else 'RIGHT_ON' if r else 'NONE_ON' if h else 'UNKNOWN'),min(1.,w['confidence']*max(f['left_confidence'],f['right_confidence'],.2))
  def render(self,im,r):
   o=im.copy();h,w=o.shape[:2]
-  for q in r['hands']:cv2.polylines(o,[np.array([[int(x*w),int(y*h)] for x,y in q['polygon']])],True,(255,90,210),2)
+  for q in r['hands']:cv2.polylines(o,[np.array([[int(x*w),int(y*h)] for x,y in q['polygon']])],True,(255,80,205),2)
   p=np.array([[int(x*w),int(y*h)] for x,y in r['wheel']['polygon']]);
-  if len(p):cv2.polylines(o,[p],True,(70,210,255),2)
-  cv2.rectangle(o,(8,8),(320,65),(8,8,10),-1);cv2.putText(o,f"{r['how_status']} {r['confidence']:.0%}",(16,38),0,.75,(80,230,140),2);return o
+  if len(p):cv2.polylines(o,[p],True,(65,210,255),2)
+  return o
