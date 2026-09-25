@@ -19,4 +19,5 @@ howvision/learning/__init__.py
 howvision/learning/trainer.py
 howvision/pipeline/__init__.py
 howvision/pipeline/engine.py
+tests/test_api.py
 tests/test_core.py

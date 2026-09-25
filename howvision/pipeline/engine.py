@@ -22,7 +22,7 @@ class Engine:
   else:seq=[(cv2.imread(str(p)),0,0.)];fps=0
   start=time.monotonic();proc=psutil.Process();rows=[];writer=None;window=deque(maxlen=self.c['temporal']['smoothing_window']);jf=(rd/'predictions.jsonl').open('w')
   for im,i,ts in seq:
-   hands=self.hands(im);wheel=self.wheel(im);f=self.features(hands,wheel);raw,conf=self.classify(f,hands,wheel);window.append(raw if conf>=self.c['temporal']['confidence_threshold'] else 'UNKNOWN');smooth=Counter(window).most_common(1)[0][0];status='HOW_ON' if smooth in LABELS[:3] else 'HOW_OFF' if smooth=='NONE_ON' else 'UNKNOWN';rec={'run_id':rid,'source_file':p.name,'frame_id':i,'sequence_index':i,'timestamp_ms':ts,'timestamp_native':{'kind':'opencv_pos_msec' if ext in VIDEOS else 'image','value':ts},'hands':hands,'wheel':wheel,'features':f,'raw_prediction':raw,'how_state':smooth,'how_status':status,'confidence':conf,'checkpoint':self.checkpoint};jf.write(json.dumps(rec)+'\n');rows.append(rec);cv2.imwrite(str(rd/'frames'/f'frame_{i:06d}.jpg'),im);ov=self.render(im,rec);cv2.imwrite(str(rd/'overlays'/f'frame_{i:06d}.jpg'),ov)
+   hands=self.hands(im);wheel=self.wheel(im);f=self.features(hands,wheel);raw,conf=self.classify(f,hands,wheel);window.append(raw if conf>=self.c['temporal']['confidence_threshold'] else 'UNKNOWN');smooth=Counter(window).most_common(1)[0][0];status='HOW_ON' if smooth in LABELS[:3] else 'HOW_OFF' if smooth=='NONE_ON' else 'UNKNOWN';rec={'run_id':rid,'source_file':p.name,'input_type':'video' if ext in VIDEOS else 'image','frame_id':i,'sequence_index':i,'timestamp_ms':ts,'timestamp_native':{'kind':'opencv_pos_msec' if ext in VIDEOS else 'image','value':ts},'hands':hands,'wheel':wheel,'features':f,'raw_prediction':raw,'how_state':smooth,'how_status':status,'confidence':conf,'checkpoint':self.checkpoint};jf.write(json.dumps(rec)+'\n');rows.append(rec);cv2.imwrite(str(rd/'frames'/f'frame_{i:06d}.jpg'),im);ov=self.render(im,rec);cv2.imwrite(str(rd/'overlays'/f'frame_{i:06d}.jpg'),ov)
    if ext in VIDEOS:
     if writer is None:writer=cv2.VideoWriter(str(rd/'output.mp4'),cv2.VideoWriter_fourcc(*'mp4v'),fps,(im.shape[1],im.shape[0]))
     writer.write(ov)
@@ -32,7 +32,7 @@ class Engine:
   if writer:writer.release()
   cols=['run_id','source_file','frame_id','sequence_index','timestamp_ms','raw_prediction','how_state','how_status','confidence','checkpoint']
   with (rd/'predictions.csv').open('w',newline='') as q:w=csv.DictWriter(q,fieldnames=cols);w.writeheader();w.writerows({k:r[k] for k in cols} for r in rows)
-  elapsed=time.monotonic()-start;atomic(rd/'metrics.json',{'frames_processed':len(rows),'seconds':elapsed,'average_fps':len(rows)/max(elapsed,.001)});atomic(rd/'config.json',self.c);atomic(rd/'manifest.json',{'run_id':rid,'status':'COMPLETED','input':p.name,'input_hash':sha(p),'frames':len(rows),'checkpoint':self.checkpoint,'model_hash':sha(self.c['paths']['hand_model'])});return rid
+  elapsed=time.monotonic()-start;atomic(rd/'metrics.json',{'frames_processed':len(rows),'seconds':elapsed,'average_fps':len(rows)/max(elapsed,.001)});atomic(rd/'config.json',self.c);atomic(rd/'manifest.json',{'run_id':rid,'status':'COMPLETED','input':p.name,'input_type':'video' if ext in VIDEOS else 'image','input_hash':sha(p),'frames':len(rows),'checkpoint':self.checkpoint,'model_hash':sha(self.c['paths']['hand_model'])});return rid
  def hands(self,im):
   r=self.det.detect(self.mp.Image(image_format=self.mp.ImageFormat.SRGB,data=cv2.cvtColor(im,cv2.COLOR_BGR2RGB)));out=[]
   for i,l in enumerate(r.hand_landmarks):

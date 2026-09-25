@@ -11,12 +11,12 @@ def allocate(root,prefix):
   try:p.mkdir();return p.name,p
   except FileExistsError:pass
  raise RuntimeError('namespace exhausted')
-def atomic(p,o):
- p=Path(p);p.parent.mkdir(parents=True,exist_ok=True);fd,t=tempfile.mkstemp(dir=p.parent)
- with os.fdopen(fd,'w') as f:json.dump(o,f,indent=2,default=str)
- os.replace(t,p)
-def sha(p):
+def atomic(path,obj):
+ path=Path(path);path.parent.mkdir(parents=True,exist_ok=True);fd,tmp=tempfile.mkstemp(dir=path.parent)
+ with os.fdopen(fd,'w') as f:json.dump(obj,f,indent=2,default=str)
+ os.replace(tmp,path)
+def sha(path):
  h=hashlib.sha256()
- with open(p,'rb') as f:
+ with open(path,'rb') as f:
   for b in iter(lambda:f.read(1048576),b''):h.update(b)
  return h.hexdigest()
