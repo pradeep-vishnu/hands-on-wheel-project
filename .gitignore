@@ -1,0 +1,15 @@
+# Ignores any folder named "build" anywhere in your project
+build/
+data/
+models/
+out_dir/
+
+# Ignores the "build" folder ONLY in the root directory (keeps src/build/)
+/build/
+
+# Ignores everything inside the "logs" folder, but keeps the empty folder structure
+# (Note: Git doesn't track empty folders natively, so you often need a .gitkeep file inside it)
+logs/*
+
+# Ignores a specific nested folder
+src/assets/temp/
