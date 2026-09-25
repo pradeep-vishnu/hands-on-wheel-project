@@ -1,6 +1,3 @@
 #!/usr/bin/env bash
 set -euo pipefail
-cd "$(dirname "$0")/.."
-[ -x .venv/bin/python ] || ./scripts/setup.sh
-.venv/bin/python scripts/check_install.py
-exec .venv/bin/python -m howvision
+cd "$(dirname "$0")/..";[ -x .venv/bin/python ]||./scripts/setup.sh;exec .venv/bin/python -m howvision

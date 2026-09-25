@@ -1,7 +1,5 @@
-app: {version: 0.2.0, host: 127.0.0.1, port: 8000}
-paths: {data: data, output: out_dir, hand_model: models/hand_landmarker/hand_landmarker.task}
-hand_detection: {backend: mediapipe_tasks, max_hands: 2, min_detection_confidence: 0.5, min_presence_confidence: 0.5, min_tracking_confidence: 0.5}
-wheel_detection: {min_confidence: 0.25, canny_low: 60, canny_high: 160, min_axis_ratio: 0.42, min_area_ratio: 0.04, max_area_ratio: 0.78}
-classifier: {hand_confidence: 0.45, wheel_confidence: 0.25, contact_distance: 0.18, no_contact_distance: 0.30}
-temporal: {confidence_threshold: 0.42, smoothing_window: 5, on_confirmation_frames: 2, off_confirmation_frames: 3, unknown_timeout: 4}
-rendering: {codec: mp4v, jpeg_quality: 92}
+app: {version: 0.3.0, host: 127.0.0.1, port: 8000}
+paths: {data: data, output: out_dir, database: howvision.db, hand_model: models/hand_landmarker.task, model_registry: models/registry.json}
+perception: {max_hands: 2, hand_confidence: 0.5, wheel_confidence: 0.25}
+classifier: {contact_distance: 0.18, unknown_threshold: 0.42}
+training: {epochs: 20, batch_size: 32, learning_rate: 0.001, seed: 42, entropy_beta: 0.01}

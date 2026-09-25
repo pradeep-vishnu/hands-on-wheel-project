@@ -1,32 +1,23 @@
 from pathlib import Path
-import hashlib, json, os, re, tempfile
-IMAGES={".jpg",".jpeg",".png",".bmp",".webp"}; VIDEOS={".mp4",".avi",".mov",".mkv"}
-def safe_name(name:str)->str:
-    raw=Path(name).name
-    if raw != name or raw in {"",".",".."}: raise ValueError("invalid filename")
-    clean=re.sub(r"[^A-Za-z0-9._-]+","_",raw)
-    if not clean: raise ValueError("invalid filename")
-    return clean
-def resolve_under(root:Path,name:str)->Path:
-    root=root.resolve(); p=(root/safe_name(name)).resolve()
-    if root not in p.parents: raise ValueError("path traversal rejected")
-    return p
-def sha256(path:Path)->str:
-    h=hashlib.sha256()
-    with path.open("rb") as f:
-        for chunk in iter(lambda:f.read(1024*1024),b""): h.update(chunk)
-    return h.hexdigest()
-def atomic_json(path:Path,obj):
-    path.parent.mkdir(parents=True,exist_ok=True); fd,tmp=tempfile.mkstemp(dir=path.parent,prefix=".tmp-")
-    try:
-        with os.fdopen(fd,"w",encoding="utf-8") as f: json.dump(obj,f,indent=2,default=str)
-        os.replace(tmp,path)
-    finally:
-        if os.path.exists(tmp): os.unlink(tmp)
-def allocate_run(root:Path):
-    root.mkdir(parents=True,exist_ok=True)
-    for i in range(1,1_000_000):
-        rid=f"run_{i:04d}"; p=root/rid
-        try: p.mkdir(); return rid,p
-        except FileExistsError: pass
-    raise RuntimeError("run namespace exhausted")
+import re,hashlib,json,os,tempfile
+IMAGES={'.jpg','.jpeg','.png','.bmp','.webp'}; VIDEOS={'.mp4','.avi','.mov','.mkv'}
+def safe_name(v):
+ if Path(v).name!=v or not re.fullmatch(r'[A-Za-z0-9._-]+',v): raise ValueError('invalid name')
+ return v
+def under(root,name): return Path(root)/safe_name(name)
+def sha(p):
+ h=hashlib.sha256()
+ with open(p,'rb') as f:
+  for b in iter(lambda:f.read(1048576),b''): h.update(b)
+ return h.hexdigest()
+def atomic_json(p,obj):
+ p=Path(p); p.parent.mkdir(parents=True,exist_ok=True); fd,t=tempfile.mkstemp(dir=p.parent)
+ with os.fdopen(fd,'w') as f: json.dump(obj,f,indent=2,default=str)
+ os.replace(t,p)
+def allocate(root,prefix):
+ root=Path(root); root.mkdir(parents=True,exist_ok=True)
+ for i in range(1,100000):
+  p=root/f'{prefix}_{i:04d}'
+  try: p.mkdir(); return p.name,p
+  except FileExistsError: pass
+ raise RuntimeError('namespace exhausted')

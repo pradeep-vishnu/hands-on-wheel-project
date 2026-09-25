@@ -1,1 +1,0 @@
-$ErrorActionPreference="Stop"; Set-Location (Join-Path $PSScriptRoot ".."); py -3.11 -m venv .venv; & .\.venv\Scripts\python.exe scripts\check_install.py; & .\.venv\Scripts\python.exe -m pip install -e .; Write-Host "Start: .\scripts\run.ps1"

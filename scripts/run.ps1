@@ -1,1 +1,0 @@
-$ErrorActionPreference="Stop"; Set-Location (Join-Path $PSScriptRoot ".."); if (-not (Test-Path .\.venv\Scripts\python.exe)) { & .\scripts\setup.ps1 }; & .\.venv\Scripts\python.exe scripts\check_install.py; & .\.venv\Scripts\python.exe -m howvision
