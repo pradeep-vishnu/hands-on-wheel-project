@@ -1,8 +1,9 @@
 from pathlib import Path
 from threading import Thread
 from uuid import uuid4
-import json,cv2
-from fastapi import FastAPI,UploadFile,File,HTTPException,Query
+from datetime import datetime,timezone
+import json,cv2,psutil
+from fastapi import FastAPI,UploadFile,File,HTTPException
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel,Field
@@ -16,9 +17,15 @@ jobs={}
 class Ann(BaseModel):run_id:str;frame_id:int;label:str;original_label:str;reward:float=1;hand_strokes:list=[];wheel_strokes:list=[];flags:list=[]
 class TrainRequest(BaseModel):selected_frames:list[str]=Field(min_length=2)
 def create_app():
- c=load();data=Path(c['paths']['data']);out=Path(c['paths']['output']);data.mkdir(exist_ok=True);out.mkdir(exist_ok=True);store=Store(c['paths']['database']);app=FastAPI(title='Hands On Wheel Project',version='0.7.0')
+ c=load();data=Path(c['paths']['data']);out=Path(c['paths']['output']);data.mkdir(exist_ok=True);out.mkdir(exist_ok=True);store=Store(c['paths']['database']);app=FastAPI(title='Hands On Wheel Project',version='0.9.0')
  @app.get('/api/health')
- def health():return {'status':'READY' if Path(c['paths']['hand_model']).exists() else 'SETUP_REQUIRED','version':'0.7.0','brush_radius_px':c['review']['brush_radius_px']}
+ def health():
+  gpu='CPU'
+  try:
+   import torch
+   if torch.cuda.is_available():gpu=torch.cuda.get_device_name(0)
+  except:pass
+  return {'status':'ACTIVE' if Path(c['paths']['hand_model']).exists() else 'SETUP','version':'0.9.0','cpu':psutil.cpu_percent(),'memory':psutil.virtual_memory().percent,'gpu':gpu,'time':datetime.now(timezone.utc).isoformat(),'review':c['review']}
  @app.post('/api/input/upload')
  async def upload(file:UploadFile=File(...)):
   name=safe(file.filename or '');p=data/name
@@ -38,50 +45,37 @@ def create_app():
  @app.get('/api/models')
  def models():return read(c['paths']['registry'])
  @app.post('/api/models/{mid}/default')
- def default(mid:str):
-  r=read(c['paths']['registry']);valid={'baseline'}|{x['id'] for x in r['checkpoints']}
-  if mid not in valid:raise HTTPException(404,'model not found')
-  r['default']=mid;write(c['paths']['registry'],r);return r
+ def default(mid:str):r=read(c['paths']['registry']);r['default']=mid;write(c['paths']['registry'],r);return r
  @app.post('/api/runs')
  def run(b:dict):
-  p=data/safe(b.get('input',''));mid=b.get('checkpoint',read(c['paths']['registry'])['default']);jid='job_'+uuid4().hex[:8];jobs[jid]={'job_id':jid,'status':'QUEUED','progress':0}
+  p=data/safe(b['input']);jid='job_'+uuid4().hex[:8];jobs[jid]={'job_id':jid,'status':'QUEUED','progress':0}
   def work():
-   try:jobs[jid]['status']='RUNNING';rid=Engine(c,mid).run(p,lambda x:jobs[jid].update(x));jobs[jid].update(status='COMPLETED',run_id=rid,progress=1)
+   try:jobs[jid]['status']='RUNNING';rid=Engine(c,b.get('checkpoint','baseline')).run(p,lambda x:jobs[jid].update(x));jobs[jid].update(status='COMPLETED',run_id=rid,progress=1)
    except Exception as e:jobs[jid].update(status='FAILED',error=str(e))
   Thread(target=work,daemon=True).start();return jobs[jid]
  @app.get('/api/jobs/{jid}')
- def job(jid:str):
-  if jid not in jobs:raise HTTPException(404,'job not found')
-  return jobs[jid]
+ def job(jid:str):return jobs[jid]
  @app.get('/api/runs')
  def runs():return [json.loads((p/'manifest.json').read_text()) for p in sorted(out.glob('run_*'),reverse=True) if (p/'manifest.json').exists()]
  @app.get('/api/review/{rid}')
  def review(rid:str):
-  p=out/rid/'predictions.jsonl'
-  if not p.exists():raise HTTPException(404,'run not found')
   anns={(x['run_id'],x['frame_id']):x for x in store.all(rid)};z=[]
-  for line in p.open():
-   x=json.loads(line);x['image']=f'/api/runs/{rid}/frames/{x["frame_id"]}?view=raw';x['annotation']=anns.get((rid,x['frame_id']));z.append(x)
+  for line in (out/rid/'predictions.jsonl').open():x=json.loads(line);x['image']=f'/api/runs/{rid}/frames/{x["frame_id"]}?view=raw';x['annotation']=anns.get((rid,x['frame_id']));z.append(x)
   return z
  @app.post('/api/review/{rid}')
- def annotation(rid:str,a:Ann):
-  if rid!=a.run_id:raise HTTPException(400,'run mismatch')
-  store.save(a.model_dump());return {'saved':True}
+ def annotation(rid:str,a:Ann):store.save(a.model_dump());return {'saved':True}
  @app.get('/api/training/preview')
- def training_preview(limit:int=Query(100,ge=1,le=500)):
-  z=[]
-  for a,r in reviewed(c,store)[:limit]:z.append({'id':f'{a["run_id"]}:{a["frame_id"]}','run_id':a['run_id'],'frame_id':a['frame_id'],'label':a['label'],'image':f'/api/runs/{a["run_id"]}/frames/{a["frame_id"]}?view=raw','hand_strokes':json.loads(a['hand_strokes']),'wheel_strokes':json.loads(a['wheel_strokes'])})
-  return z
+ def training_preview():return [{'id':f'{a["run_id"]}:{a["frame_id"]}','run_id':a['run_id'],'frame_id':a['frame_id'],'label':a['label'],'image':f'/api/runs/{a["run_id"]}/frames/{a["frame_id"]}?view=raw','hand_strokes':json.loads(a['hand_strokes']),'wheel_strokes':json.loads(a['wheel_strokes'])} for a,r in reviewed(c,store)]
  @app.post('/api/training')
  def training(req:TrainRequest):
-  jid='job_'+uuid4().hex[:8];jobs[jid]={'job_id':jid,'status':'QUEUED','progress':0,'selected_frames':len(req.selected_frames)}
+  jid='job_'+uuid4().hex[:8];jobs[jid]={'job_id':jid,'status':'QUEUED','progress':0}
   def work():
    try:jobs[jid]['status']='RUNNING';mid,m=train(c,store,req.selected_frames,lambda x:jobs[jid].update(x));jobs[jid].update(status='COMPLETED',model_id=mid,metrics=m,progress=1)
    except Exception as e:jobs[jid].update(status='FAILED',error=str(e))
   Thread(target=work,daemon=True).start();return jobs[jid]
  @app.get('/api/runs/{rid}/frames/{fid}')
  def frame(rid:str,fid:int,view:str='overlay'):
-  folder='frames' if view=='raw' else 'overlays';p=out/rid/folder/f'frame_{fid:06d}.jpg'
+  p=out/rid/('frames' if view=='raw' else 'overlays')/f'frame_{fid:06d}.jpg'
   if not p.exists():raise HTTPException(404,'frame unavailable')
   return FileResponse(p)
  @app.get('/api/runs/{rid}/csv')

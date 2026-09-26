@@ -1,11 +1,8 @@
-from pathlib import Path
 from fastapi.testclient import TestClient
 from howvision.api.app import create_app
-def test_ui_and_health():
- c=TestClient(create_app());html=c.get('/').text
- assert c.get('/api/health').json()['version']=='0.7.0'
- assert 'Waiting for inference' not in html
- assert 'Open queue' not in html and 'Magic Select' not in html
- assert 'Training influence' in html and 'Input cues' in html
-def test_training_requires_selection():
- c=TestClient(create_app());r=c.post('/api/training',json={'selected_frames':[]});assert r.status_code==422
+def test_contract():
+ c=TestClient(create_app());h=c.get('/').text;j=c.get('/api/health').json()
+ assert j['version']=='0.9.0' and 'cpu' in j and 'gpu' in j and 'time' in j
+ for x in ['Undo last','Reviewed ▶','◀ Reviewed','Move']:assert x in h
+def test_training_guard():
+ c=TestClient(create_app());assert c.post('/api/training',json={'selected_frames':[]}).status_code==422
