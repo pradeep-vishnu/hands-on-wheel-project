@@ -1,18 +1,24 @@
-# Hands On Wheel Project v0.9.0
+# HOW Vision 1.1.0
 
-Review Studio stabilization plus retained inference, selective fine-tuning and model management.
+Complete local-first RGB Hands-On-Wheel workbench.
 
-## Start
+## Run
 ```bash
 ./scripts/setup.sh
 ./scripts/run.sh
 ```
 
-## Review interaction
-- Unsaved prompt appears only when leaving the current frame or cue through the frame slider, reviewed-frame jump controls, or cue selection.
-- Prompt offers Undo last, Discard and continue, and Save and continue.
-- Ctrl+Z and Cmd+Z undo the latest label or mask edit.
-- Previous/next Reviewed controls jump only among manually saved frames.
-- Mouse wheel no longer changes zoom. Zoom uses explicit buttons.
-- Move is a toggle. While active, right-click drag pans the frame. Turning Move off resumes the selected paint tool.
-- Top-right telemetry HUD reports active/setup state, CPU, RAM, GPU backend and local date/time.
+## Architecture
+- `howvision/inference/types.py`: project-owned frame, detection, feature, prediction and result contracts.
+- `io.py`: ordered image/video decoding with canonical IDs and native timestamps.
+- `adapters.py`: replaceable MediaPipe hand, ellipse wheel, rule and PyTorch policy adapters.
+- `temporal.py`: independently tested confirmation, smoothing, uncertainty and reset.
+- `render.py`: standalone overlay renderer.
+- `engine.py`: atomic run allocation, stable CSV, rich JSONL, resolved configuration, metrics, logs, overlays, media and manifest.
+- `api/`, `frontend/`, and `training/`: review, selected-cue training, epoch comparisons, hyperparameters and model registry.
+
+## Notes
+- `UNKNOWN` remains reachable for insufficient evidence.
+- The wheel detector is only a replaceable geometric baseline.
+- Baseline inference uses rules. Fine-tuned checkpoints use the compact PyTorch policy.
+- GPU utilization is `null` unless a supported telemetry adapter supplies it.

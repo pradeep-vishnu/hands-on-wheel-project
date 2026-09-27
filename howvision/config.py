@@ -1,3 +1,4 @@
 from pathlib import Path
 import yaml
-def load(): return yaml.safe_load(Path("configs/default.yaml").read_text())
+def load(path='configs/default.yaml'):
+    return yaml.safe_load(Path(path).read_text(encoding='utf-8'))
