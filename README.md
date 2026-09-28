@@ -1,14 +1,14 @@
 # HOW Vision
 
-**A local-first RGB image and video workbench for experimental Hands-On-Wheel analysis**
+**A local-first RGB image and video workbench for experimental Hands-On-Wheel detection pipeline**
 
-https://img.shields.io/badge/release-v3.0.0-blue](#version)
+https://img.shields.io/badge/release-v1.0.0-blue](#version)
 [![ps://img.shields.io/badge/status-unstable%20nightly-orange](#project-status)
 [![Production Ready](httpsge/production%20ready-no-red](#important-safety-notice)
 [![Contributionslds.io/badge/contributions-welcome-brightgreen](#contributing)
 
 > [!WARNING]
-> **HOW Vision v3.0.0 is an unstable nightly release.**
+> **HOW Vision v1.0.0 is an unstable nightly release.**
 >
 > This version is intended for experimentation, research prototyping, interface evaluation, and community development. It is not production-ready, safety-certified, or validated for use in a vehicle, driver-monitoring system, or any other safety-critical environment.
 >
@@ -72,7 +72,7 @@ The project is intended to support an experimental end-to-end workflow:
 8. Compare checkpoints and training sessions.
 9. Preserve run metadata and outputs for reproducibility.
 
-Version `3.0.0` consolidates the inference, review, fine-tuning, checkpoint management, hardware selection, runtime telemetry, and model-lineage concepts explored during earlier development.
+Version `1.0.0` consolidates the inference, review, fine-tuning, checkpoint management, hardware selection, runtime telemetry, and model-lineage concepts explored during earlier development.
 
 The implementation remains a research prototype. Model output should be treated as inspectable evidence, not as a reliable statement about driver behavior.
 
@@ -152,8 +152,8 @@ The `UNKNOWN` state is an intentional system outcome. Ambiguous or insufficient 
 
 ```text
 Project: HOW Vision
-Version: 3.0.0
-Archive: how-vision-final-v3.0.0.tar.gz
+Version: 1.0.0
+Archive: how-vision-final-v1.0.0.tar.gz
 Release type: Unstable nightly
 Development stage: Experimental prototype
 Production status: Not production-ready
@@ -236,12 +236,6 @@ Video frames should preserve decode order and retain native timestamps when avai
 ### Hardware Selection
 
 The application can inspect the local environment for:
-
-- CPU
-- NVIDIA CUDA
-- Apple Metal Performance Shaders, or MPS
-
-Available options can include:
 
 ```text
 Auto
@@ -354,8 +348,8 @@ Optional acceleration:
 ### Extract the Archive
 
 ```bash
-tar -xzf how-vision-final-v3.0.0.tar.gz
-cd how-vision-final
+git clone https://github.com/pradeep-vishnu/hands-on-wheel-project.git
+cd hands-on-wheel-project
 ```
 
 ### Run Setup
@@ -377,8 +371,8 @@ The setup process can:
 If the setup script cannot be used:
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
+python3 -m venv .how_venv
+source .how_venv/bin/activate
 python -m pip install --upgrade pip
 python -m pip install -e ".[test]"
 ```
@@ -386,8 +380,8 @@ python -m pip install -e ".[test]"
 On Windows PowerShell:
 
 ```powershell
-python -m venv .venv
-.venv\Scripts\Activate.ps1
+python -m venv .how_venv
+.how_venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
 python -m pip install -e ".[test]"
 ```
@@ -819,23 +813,7 @@ The application can generate basic suggestions using signals such as:
 - class imbalance
 - validation-set size
 
-Example recommendation:
-
-```text
-Epochs: 40
-Learning rate: 0.0005
-Batch size: 4
-Hidden width: 24
-Weight decay: 0.0001
-Validation fraction: 0.20
-Early-stopping patience: 6
-Gradient clipping: 1.0
-Random seed: 42
-```
-
-Suggested values are heuristics.
-
-They do not guarantee maximum accuracy.
+Suggested values are heuristics. They do not guarantee maximum accuracy.
 
 Reliable hyperparameter selection requires:
 
@@ -1019,7 +997,7 @@ Configuration areas can include:
 
 ```yaml
 app:
-  version: 3.0.0
+  version: 1.0.0
 
 paths:
   data: data
@@ -1097,7 +1075,7 @@ Run Python compilation checks:
 python -m compileall -q howvision scripts
 ```
 
-The v3.0.0 nightly package was reported as passing:
+The v1.0.0 nightly package was reported as passing:
 
 ```text
 6 passed
@@ -1152,7 +1130,7 @@ frontend and backend version matching
 
 ## Known Limitations
 
-Version `3.0.0` is an unstable nightly build.
+Version `1.0.0` is an unstable nightly build.
 
 Known or expected limitations include:
 
@@ -1660,7 +1638,7 @@ The project aims to:
 - allocate unique run directories
 - write important metadata atomically
 
-Version `3.0.0` has not undergone a complete security review.
+Version `1.0.0` has not undergone a complete security review.
 
 Do not expose the server to an untrusted network.
 
@@ -1676,7 +1654,7 @@ Do not change the binding to a public interface without implementing authenticat
 
 ## Performance and Accuracy
 
-No production-level accuracy claim is made for v3.0.0.
+No production-level accuracy claim is made for v1.0.0.
 
 Performance depends on:
 
@@ -1707,68 +1685,6 @@ Any reported accuracy should include:
 - confidence interval where practical
 
 Avoid comparing sessions that use different data splits or evaluation protocols.
-
----
-
-## Frequently Asked Questions
-
-### Is v3.0.0 production-ready?
-
-No. Version `3.0.0` is an unstable nightly build.
-
-### Can HOW Vision control a vehicle?
-
-No.
-
-### Can HOW Vision be used for driver scoring?
-
-Not responsibly in the current form.
-
-### Does selecting CUDA move every operation to the GPU?
-
-No. Compatible PyTorch operations can use CUDA. OpenCV and some perception operations can remain CPU-based.
-
-### Does selecting MPS move every operation to Apple hardware acceleration?
-
-No. Compatible PyTorch operations can use MPS. Other pipeline components can remain CPU-based.
-
-### Does fine-tuning update MediaPipe?
-
-No. Fine-tuning targets the compact decision-policy classifier.
-
-### Are painted masks used for segmentation training?
-
-The nightly workflow can preserve painted corrections, but a stable segmentation-training pipeline is not established.
-
-### Why is a prediction UNKNOWN?
-
-Evidence can be missing, weak, occluded, ambiguous, or below configured thresholds.
-
-### Why can validation accuracy change sharply?
-
-Small validation sets can cause large metric changes when one prediction changes.
-
-### Why is development intentionally slow?
-
-The project values reliability, reproducibility, tests, and review over rapid feature accumulation.
-
-### How can development move faster?
-
-Community pull requests, reproducible bug reports, tests, documentation, and hardware-compatibility reports can help increase the pace.
-
----
-
-## License
-
-No license should be assumed unless a license file is included in the repository.
-
-Before distributing, modifying, or integrating the project into another product, review:
-
-- repository license status
-- dependency licenses
-- model asset licenses
-- dataset licenses
-- attribution requirements
 
 ---
 
@@ -1812,12 +1728,10 @@ The project is looking forward to contributors who can help transform unstable n
 
 ## Nightly Release Disclaimer
 
-> HOW Vision v3.0.0 is an unstable nightly research prototype.
+> HOW Vision v1.0.0 is an unstable nightly research prototype.
 >
 > Interfaces, schemas, model behavior, configuration, and stored artifacts can change without backward compatibility.
 >
 > Do not use this build for vehicle control, safety intervention, compliance decisions, personnel evaluation, legal decisions, insurance decisions, or any other consequential decision.
 >
 > Validate every workflow locally, preserve original data, retain run metadata, and independently review model output.
->
-> Development is expected to progress slowly and carefully. Community contributions, pull requests, tests, documentation, and reproducible issue reports are welcome and can help increase the pace while preserving reliability.
