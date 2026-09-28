@@ -1,22 +1,20 @@
-# HOW Vision v2.0.0
+# HOW Vision Final v3.0.0
 
-Complete local HOW workbench with inference, review, selective fine-tuning, model lineage and per-session random local ports.
+A local RGB image and video Hands-On-Wheel workbench with inference, review, selective fine-tuning and model lineage.
 
-## Run
+## Start
 ```bash
 ./scripts/setup.sh
 ./scripts/run.sh
 ```
-Each launch binds to an operating-system assigned free localhost port and opens a URL containing a random session token. This avoids reusing stale browser origins from earlier versions.
+Every launch uses a fresh free localhost port and random session query to isolate the browser from older builds.
 
-## Included
-- Controlled image/video upload and preview.
-- CPU, CUDA and Apple MPS discovery with tested CPU fallback.
-- Inference run manifests record requested and actual device.
-- Review Studio with label correction, mask points, undo and save guard.
-- Fine-tuning cue selection, suggested hyperparameters and editable descriptions.
-- Epoch loss, validation accuracy, accuracy delta and before/after example predictions.
-- Timestamped PyTorch checkpoints and model evolution metadata.
-- Models dashboard with accuracy, device, parameter count and checkpoint size.
+## Workflow
+1. Upload an image or video and select CPU, CUDA, MPS or Auto.
+2. Run inference and inspect ordered frames, HOW state, confidence, overlays and CSV output.
+3. Review a run using the video-style timeline, reviewed-frame navigation, label controls and mask brushes.
+4. Save reviewed cues and select them in Fine-tune.
+5. Apply suggested hyperparameters or edit them, then inspect epoch metrics and before/after predictions.
+6. Compare timestamped checkpoints in Models.
 
-OpenCV geometry remains CPU based. Accelerator selection applies to the PyTorch policy training and checkpoint inference seam. CPU fallback is explicit in job metadata.
+CUDA or MPS is tested before use. Unsupported or failed accelerators fall back to CPU and the fallback is recorded.

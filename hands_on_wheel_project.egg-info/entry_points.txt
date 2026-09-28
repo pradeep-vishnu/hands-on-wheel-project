@@ -1,2 +1,0 @@
-[console_scripts]
-howvision = howvision.__main__:main
