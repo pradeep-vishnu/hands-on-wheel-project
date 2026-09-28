@@ -1,4 +1,4 @@
-# HOW Vision
+# Hands-On-Wheel-Project
 
 **A local-first RGB image and video workbench for experimental Hands-On-Wheel detection pipeline**
 
@@ -9,7 +9,9 @@
 
 > [!WARNING]
 > **HOW Vision v1.0.0 is an unstable nightly release.**
->
+
+<img width="1000px" src="demo.png" alt="Demo Image"> 
+
 > This version is intended for experimentation, research prototyping, interface evaluation, and community development. It is not production-ready, safety-certified, or validated for use in a vehicle, driver-monitoring system, or any other safety-critical environment.
 >
 > Expect incomplete behavior, changing interfaces, model limitations, and possible regressions between nightly versions.
