@@ -18,46 +18,6 @@
 
 ---
 
-## Table of Contents
-
-- #overview
-- #project-status
-- #important-safety-notice
-- #version
-- #features
-- #system-architecture
-- #installation
-- #running-the-application
-- #typical-workflow
-- #inference
-- #hardware-selection
-- #runtime-telemetry
-- #review-studio
-- #fine-tuning
-- #hyperparameters
-- #suggested-hyperparameters
-- #models-and-checkpoints
-- #outputs-and-reproducibility
-- #configuration
-- #testing
-- [known-limitations
-- [Troubleshooting
-- #development-philosophy
-- #roadmap
-- #contributing
-- #pull-requests
-- #issue-reports
-- #responsible-use
-- #data-privacy
-- #security
-- #performance-and-accuracy
-- #frequently-asked-questions
-- #license
-- #acknowledgements
-- [Nightly Release-disclaimer
-
----
-
 ## Overview
 
 HOW Vision is a local-first workbench for exploring Hands-On-Wheel detection from RGB images and videos.
