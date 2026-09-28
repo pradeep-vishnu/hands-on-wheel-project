@@ -2,10 +2,10 @@
 
 **A local-first RGB image and video workbench for experimental Hands-On-Wheel detection pipeline**
 
-https://img.shields.io/badge/release-v1.0.0-blue](#version)
-[![ps://img.shields.io/badge/status-unstable%20nightly-orange](#project-status)
-[![Production Ready](httpsge/production%20ready-no-red](#important-safety-notice)
-[![Contributionslds.io/badge/contributions-welcome-brightgreen](#contributing)
+[![Release](https://img.shields.io/badge/release-v1.0.0-blue)](#version)
+[![Status](https://img.shields.io/badge/status-unstable%20nightly-orange)](#project-status)
+[![Production Ready](https://img.shields.io/badge/production%20ready-no-red)](#important-safety-notice)
+[![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-brightgreen)](#contributing)
 
 > [!WARNING]
 > **HOW Vision v1.0.0 is an unstable nightly release.**
