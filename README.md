@@ -1,24 +1,22 @@
-# HOW Vision 1.1.0
+# HOW Vision v2.0.0
 
-Complete local-first RGB Hands-On-Wheel workbench.
+Complete local HOW workbench with inference, review, selective fine-tuning, model lineage and per-session random local ports.
 
 ## Run
 ```bash
 ./scripts/setup.sh
 ./scripts/run.sh
 ```
+Each launch binds to an operating-system assigned free localhost port and opens a URL containing a random session token. This avoids reusing stale browser origins from earlier versions.
 
-## Architecture
-- `howvision/inference/types.py`: project-owned frame, detection, feature, prediction and result contracts.
-- `io.py`: ordered image/video decoding with canonical IDs and native timestamps.
-- `adapters.py`: replaceable MediaPipe hand, ellipse wheel, rule and PyTorch policy adapters.
-- `temporal.py`: independently tested confirmation, smoothing, uncertainty and reset.
-- `render.py`: standalone overlay renderer.
-- `engine.py`: atomic run allocation, stable CSV, rich JSONL, resolved configuration, metrics, logs, overlays, media and manifest.
-- `api/`, `frontend/`, and `training/`: review, selected-cue training, epoch comparisons, hyperparameters and model registry.
+## Included
+- Controlled image/video upload and preview.
+- CPU, CUDA and Apple MPS discovery with tested CPU fallback.
+- Inference run manifests record requested and actual device.
+- Review Studio with label correction, mask points, undo and save guard.
+- Fine-tuning cue selection, suggested hyperparameters and editable descriptions.
+- Epoch loss, validation accuracy, accuracy delta and before/after example predictions.
+- Timestamped PyTorch checkpoints and model evolution metadata.
+- Models dashboard with accuracy, device, parameter count and checkpoint size.
 
-## Notes
-- `UNKNOWN` remains reachable for insufficient evidence.
-- The wheel detector is only a replaceable geometric baseline.
-- Baseline inference uses rules. Fine-tuned checkpoints use the compact PyTorch policy.
-- GPU utilization is `null` unless a supported telemetry adapter supplies it.
+OpenCV geometry remains CPU based. Accelerator selection applies to the PyTorch policy training and checkpoint inference seam. CPU fallback is explicit in job metadata.

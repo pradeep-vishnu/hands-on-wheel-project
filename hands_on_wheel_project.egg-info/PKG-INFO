@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: hands-on-wheel-project
-Version: 1.1.0
+Version: 2.0.0
 Requires-Python: >=3.11
 Requires-Dist: fastapi<1,>=0.110
 Requires-Dist: uvicorn[standard]<1,>=0.27
@@ -10,8 +10,8 @@ Requires-Dist: numpy<3,>=1.26
 Requires-Dist: PyYAML<7,>=6
 Requires-Dist: python-multipart<1,>=0.0.9
 Requires-Dist: mediapipe<0.11,>=0.10.14
-Requires-Dist: torch<3,>=2.2
 Requires-Dist: psutil<8,>=5.9
+Requires-Dist: torch<3,>=2.2
 Provides-Extra: test
 Requires-Dist: pytest<10,>=8; extra == "test"
 Requires-Dist: httpx<1,>=0.27; extra == "test"

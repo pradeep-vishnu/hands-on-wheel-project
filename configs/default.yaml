@@ -1,7 +1,5 @@
-app: {version: 1.1.0, host: 127.0.0.1, port: 8000, open_browser: true}
-paths: {data: data, output: out_dir, database: howvision.db, hand_model: models/hand_landmarker.task, registry: models/registry.json}
-perception: {hand_confidence: 0.5, wheel_confidence: 0.25}
-classifier: {contact_distance: 0.18, none_distance: 0.30}
-temporal: {confidence_threshold: 0.42, smoothing_window: 5, on_confirmation_frames: 2, off_confirmation_frames: 3, unknown_timeout: 4}
-review: {brush_px: 18, min_brush_px: 6, max_brush_px: 64}
-training: {epochs: 20, learning_rate: 0.001, batch_size: 16, hidden_width: 24, weight_decay: 0.0001, entropy_coefficient: 0.01, validation_fraction: 0.2, random_seed: 42, early_stopping_patience: 5, gradient_clip: 1.0}
+app: {version: 2.0.0, host: 127.0.0.1, port: 8000, open_browser: true}
+paths: {data: data, output: out_dir, database: howvision.db, hand_model: models/hand_landmarker.task}
+input: {images: [.jpg, .jpeg, .png, .bmp, .webp], videos: [.mp4, .avi, .mov, .mkv]}
+classifier: {contact_distance: 0.18, wheel_confidence: 0.25}
+temporal: {confidence_threshold: 0.42, smoothing_window: 5}
