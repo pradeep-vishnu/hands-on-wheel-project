@@ -68,48 +68,6 @@ The project is under active exploration. Interfaces, output schemas, configurati
 
 ---
 
-## Important Safety Notice
-
-HOW Vision must not be used as the sole source of information for:
-
-- vehicle control
-- autonomous or assisted-driving decisions
-- driver intervention
-- driver scoring
-- employee or operator evaluation
-- compliance enforcement
-- incident attribution
-- disciplinary decisions
-- insurance decisions
-- legal decisions
-- safety-critical alerts
-
-The application can produce incorrect predictions because of:
-
-- camera positioning
-- camera calibration
-- lighting conditions
-- motion blur
-- video compression
-- steering-wheel geometry
-- partial wheel visibility
-- hand orientation
-- hand occlusion
-- gloves
-- clothing
-- unsupported input formats
-- missing model assets
-- weak annotations
-- imbalanced annotations
-- insufficient training data
-- unsupported hardware
-- device fallback
-- configuration errors
-
-The `UNKNOWN` state is an intentional system outcome. Ambiguous or insufficient evidence should not be forced into an ON or OFF decision.
-
----
-
 ## Version
 
 ```text
@@ -363,12 +321,6 @@ Each launch is intended to use:
 - a newly allocated localhost port
 - a random session query value
 
-Example:
-
-```text
-http://127.0.0.1:49157/?session=a728db31f2
-```
-
 This design reduces the risk of the browser reopening an older localhost origin with stale assets.
 
 Keep the terminal open while using HOW Vision.
@@ -400,9 +352,7 @@ Use CPU when troubleshooting accelerator-specific behavior.
 
 ### 3. Upload Input Data
 
-Upload a supported RGB image or video.
-
-Typical supported image formats:
+Upload a supported RGB image or video formats:
 
 ```text
 .jpg
@@ -410,11 +360,6 @@ Typical supported image formats:
 .png
 .bmp
 .webp
-```
-
-Typical supported video formats:
-
-```text
 .mp4
 .avi
 .mov
@@ -431,9 +376,7 @@ Choose:
 Baseline
 ```
 
-or a previously generated fine-tuned checkpoint.
-
-Checkpoint compatibility is not guaranteed between nightly releases.
+or a previously generated fine-tuned checkpoint. Checkpoint compatibility is not guaranteed between nightly releases.
 
 ### 5. Run Inference
 
@@ -534,18 +477,6 @@ Review Studio can include:
 - next reviewed-frame control
 - reviewed-frame position
 
-Example:
-
-```text
-Reviewed frame 1 of 4
-```
-
-If the current frame has not been reviewed:
-
-```text
-Not reviewed · 4 reviewed frames
-```
-
 ### Decision Correction
 
 Available labels:
@@ -572,17 +503,6 @@ Experimental mask correction can include:
 - clear
 - predicted evidence toggle
 
-Suggested colors:
-
-```text
-Hand correction: pink
-Wheel correction: yellow
-Predicted hand evidence: pink outline
-Predicted wheel evidence: cyan outline
-Eraser: red active state
-Move mode: blue active state
-```
-
 ### Zoom and Navigation
 
 The review viewport can include:
@@ -606,8 +526,6 @@ Undo last
 Discard
 Save & continue
 ```
-
-The save prompt should appear only when navigation would otherwise discard unsaved changes.
 
 ### Annotation Structure
 
@@ -777,16 +695,6 @@ The application can generate basic suggestions using signals such as:
 
 Suggested values are heuristics. They do not guarantee maximum accuracy.
 
-Reliable hyperparameter selection requires:
-
-- representative data
-- independent evaluation data
-- multiple training sessions
-- stable metrics
-- fixed splits
-- documented seeds
-- checkpoint comparison
-
 ---
 
 ## Models and Checkpoints
@@ -841,26 +749,6 @@ Delta:
 0 parameters
 +0.3 KB
 ```
-
-### Model Evolution Dashboard
-
-The graphical dashboard can compare:
-
-- baseline
-- previous fine-tuning session
-- latest fine-tuning session
-
-Possible metrics:
-
-- validation accuracy
-- training loss
-- accuracy delta
-- checkpoint size
-- parameter count
-- training-cue count
-- selected compute device
-
-A new checkpoint should not be labeled improved unless evaluated against a consistent held-out dataset.
 
 ---
 
@@ -1351,12 +1239,6 @@ The project is particularly interested in contributions related to:
 - technical writing
 - installation documentation
 
-Contributions can help increase the development pace while preserving stability and review quality.
-
----
-
-## Pull Requests
-
 Pull requests are welcome.
 
 Before opening a pull request:
@@ -1375,38 +1257,6 @@ Before opening a pull request:
 12. Keep framework-specific objects inside adapters.
 13. Prefer small modules over monolithic scripts.
 14. Include migration notes when storage formats change.
-
-Suggested pull request template:
-
-```markdown
-## Problem
-
-Describe the current problem.
-
-## Change
-
-Describe the implementation.
-
-## Scope
-
-List the files and components affected.
-
-## Verification
-
-List the commands and tests executed.
-
-## Results
-
-Provide actual test output or evaluation metrics.
-
-## Compatibility
-
-Describe schema, configuration, or checkpoint compatibility.
-
-## Risks
-
-Describe migration, performance, safety, or reliability risks.
-```
 
 ---
 
@@ -1429,262 +1279,11 @@ When reporting an issue, include:
 
 Do not upload confidential or personally identifiable driving footage.
 
-Suggested issue template:
-
-```markdown
-## Environment
-
-- HOW Vision version:
-- Operating system:
-- Python version:
-- Browser:
-- Device selection:
-- Checkpoint:
-
-## Input
-
-- Input type:
-- File extension:
-- Resolution:
-- Approximate frame count:
-
-## Steps to Reproduce
-
-1.
-2.
-3.
-
-## Expected Behavior
-
-Describe the expected behavior.
-
-## Actual Behavior
-
-Describe the observed behavior.
-
-## Terminal Output
-
-```text
-Paste terminal output here.
-```
-
-## Additional Context
-
-Provide relevant configuration or manifest details.
-```
-
----
-
-## Contribution Priorities
-
-### Priority 1: Baseline Reliability
-
-- frame ordering
-- timestamps
-- path security
-- atomic run allocation
-- recoverable frame errors
-- stable CSV and JSONL schemas
-- reproducible manifests
-
-### Priority 2: Perception and Decisions
-
-- replaceable detectors
-- wheel evidence quality
-- contact features
-- uncertainty handling
-- temporal smoothing
-- confidence calibration
-
-### Priority 3: Review Stability
-
-- save and reload
-- frame scrubbing
-- zoom and pan
-- brush coordinates
-- undo
-- unsaved-change protection
-- reviewed-frame navigation
-
-### Priority 4: Training Reliability
-
-- selected-cue filtering
-- deterministic splits
-- stable metrics
-- early stopping
-- checkpoint loading
-- parent-child lineage
-- fixed evaluation sets
-
-### Priority 5: Interface and Accessibility
-
-- responsive layout
-- consistent spacing
-- keyboard navigation
-- screen-reader labels
-- color contrast
-- touch support
-- reduced-motion support
-
----
-
-## Responsible Use
-
-### Safety
-
-Do not deploy nightly builds in safety-critical settings.
-
-### Transparency
-
-Clearly disclose when results come from an experimental model.
-
-### Accountability
-
-Retain manifests, configuration, checkpoint metadata, and input hashes.
-
-### Privacy
-
-Use local data wherever possible. Avoid uploading sensitive footage to public issue trackers.
-
-### Fairness
-
-Evaluate across diverse:
-
-- camera positions
-- environments
-- steering-wheel designs
-- clothing
-- lighting conditions
-- hand orientations
-- input resolutions
-- compression levels
-
-### Human Oversight
-
-Use predictions as reviewable evidence, not as autonomous decisions.
-
----
-
-## Data Privacy
-
-HOW Vision is designed as a local-first project.
-
-Local-first behavior still depends on:
-
-- application configuration
-- installed dependencies
-- added integrations
-- user handling of inputs and outputs
-
-Users are responsible for ensuring that footage is:
-
-- lawfully collected
-- appropriately consented
-- securely stored
-- accessed only by authorized users
-- deleted when no longer needed
-
-Do not commit real driving footage, personal data, or confidential recordings to a public repository.
-
----
-
-## Security
-
-The project aims to:
-
-- constrain paths beneath known project directories
-- sanitize uploaded filenames
-- reject traversal attempts
-- reject unsupported extensions
-- avoid overwriting existing runs
-- allocate unique run directories
-- write important metadata atomically
-
-Version `1.0.0` has not undergone a complete security review.
-
-Do not expose the server to an untrusted network.
-
-The intended binding is:
-
-```text
-127.0.0.1
-```
-
-Do not change the binding to a public interface without implementing authentication, authorization, transport security, request limits, and upload controls.
-
----
-
-## Performance and Accuracy
-
-No production-level accuracy claim is made for v1.0.0.
-
-Performance depends on:
-
-- CPU
-- GPU
-- PyTorch build
-- MediaPipe runtime
-- video resolution
-- video codec
-- frame count
-- storage speed
-- operating system
-- selected checkpoint
-- annotation quality
-- dataset balance
-- temporal configuration
-
-Any reported accuracy should include:
-
-- dataset description
-- class distribution
-- held-out split
-- random seed
-- checkpoint ID
-- hyperparameters
-- device
-- metric
-- confidence interval where practical
-
-Avoid comparing sessions that use different data splits or evaluation protocols.
-
----
-
-## Acknowledgements
-
-HOW Vision builds on open-source tools and research ecosystems including:
-
-- Python
-- OpenCV
-- FastAPI
-- PyTorch
-- MediaPipe
-- NumPy
-- Uvicorn
-- Pydantic
-- psutil
-- PyYAML
-
-Review each dependency's license and attribution requirements before redistribution.
-
 ---
 
 ## Support the Project
 
-If HOW Vision is useful, consider contributing through:
-
-- pull requests
-- reproducible bug reports
-- automated tests
-- documentation improvements
-- interface and accessibility fixes
-- hardware compatibility reports
-- model evaluation tooling
-- legally shareable synthetic fixtures
-- benchmark design
-- code review
-
-The project is looking forward to contributors who can help transform unstable nightly experiments into a modular, testable, observable, and trustworthy workbench.
+If HOW Vision is useful, please consider contributing. The project is looking forward to contributors who can help transform unstable nightly experiments into a modular, testable, and trustworthy open-source workbench.
 
 ---
 
@@ -1694,6 +1293,6 @@ The project is looking forward to contributors who can help transform unstable n
 >
 > Interfaces, schemas, model behavior, configuration, and stored artifacts can change without backward compatibility.
 >
-> Do not use this build for vehicle control, safety intervention, compliance decisions, personnel evaluation, legal decisions, insurance decisions, or any other consequential decision.
+> Do not use this build for any decision making.
 >
 > Validate every workflow locally, preserve original data, retain run metadata, and independently review model output.
