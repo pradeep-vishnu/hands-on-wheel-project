@@ -10,8 +10,6 @@
 > [!WARNING]
 > **HOW Vision v1.0.0 is an unstable nightly release.**
 
-<img width="1000px" src="demo.png" alt="Demo Image"> 
-
 > This version is intended for experimentation, research prototyping, interface evaluation, and community development. It is not production-ready, safety-certified, or validated for use in a vehicle, driver-monitoring system, or any other safety-critical environment.
 >
 > Expect incomplete behavior, changing interfaces, model limitations, and possible regressions between nightly versions.
@@ -84,6 +82,8 @@ Production status: Not production-ready
 ## Features
 
 ### Inference
+
+<img width="1000px" src="demo/demo_2.png" alt="Demo Image"> 
 
 The Inference workspace is designed to support:
 
@@ -409,6 +409,8 @@ Review:
 
 ### 7. Open Review Studio
 
+<img width="1000px" src="demo/demo_1.png" alt="Demo Image"> 
+
 Select a completed run.
 
 Use the frame scrubber for multi-frame inputs and correct labels or masks where necessary.
@@ -557,6 +559,8 @@ Stroke coordinates can be normalized to the displayed image or stored in source-
 ---
 
 ## Fine-Tuning
+
+<img width="1000px" src="demo/demo_3.png" alt="Demo Image"> 
 
 The Fine-tune workspace is intended to support:
 
