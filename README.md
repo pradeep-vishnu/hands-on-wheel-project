@@ -9,6 +9,7 @@
 
 > [!WARNING]
 > **HOW Vision v1.0.0 is an unstable nightly release.**
+<img width="800px" src="demo/demo.png" alt="Demo Image"> 
 
 > This version is intended for experimentation, research prototyping, interface evaluation, and community development. It is not production-ready, safety-certified, or validated for use in a vehicle, driver-monitoring system, or any other safety-critical environment.
 >
